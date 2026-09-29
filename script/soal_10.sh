@@ -4,8 +4,6 @@
 apt-get update
 apt install nginx php php-fpm -y
 
-
-
 nano /var/www/jarkom/index.php
 <!DOCTYPE html>
 <html>
