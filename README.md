@@ -7,13 +7,300 @@
 | Pradipta Airlangga Ramadhan | 5027241118 |
 ----
 
-
 # IP Address Host : 10.4.89.247
 
 # IP Prefix : 10.81.x.x
 
 # Shadow Net Operation
 Author: Rootkids & Obladioblada
+
+## Soal-1
+Sebagai pusat kesadaran The Mesh, rootkit harus merentangkan koneksinya ke lima gerbang utama (Switch). Tetapkan alamat IP dan default gateway untuk seluruh Entitas, mulai dari para operator (alpha, beta, gamma), penjaga directory (prab, tedd), gerbang penyaring (abbey, penny), hingga repository (obladi, desmond, oblada, molly) sesuai dengan topologi pembagian switch yang dirancang.
+
+![alt text](image/topologi.png)
+
+## Soal-2
+Meskipun The Mesh beroperasi dalam bayang-bayang, Rootkit menyadari bahwa Entitas di dalamnya masih membutuhkan asupan paket dari dunia luar. Buka jalur menuju NAT dengan memastikan antarmuka WAN di router rootkit aktif. Konfigurasikan NAT agar dapat meneruskan lalu lintas keluar bagi seluruh alamat internal, sehingga semua host di dalam jaringan dapat menjangkau internet publik menggunakan IP address.
+
+Kita melakukan konfigurasi pada setiap console, baik router dan non-router:
+
+### Rootkit
+```
+uto eth0
+iface eth0 inet dhcp
+
+auto eth1
+iface eth1 inet static
+    address 10.81.1.1
+    netmask 255.255.255.0
+
+auto eth2
+iface eth2 inet static
+    address 10.81.4.1
+    netmask 255.255.255.0
+
+auto eth3
+iface eth3 inet static
+    address 10.81.5.1
+    netmask 255.255.255.0
+
+auto eth4
+iface eth4 inet static
+    address 10.81.6.1
+    netmask 255.255.255.0
+
+auto eth5
+iface eth5 inet static
+    address 10.81.7.1
+    netmask 255.255.255.0
+```
+
+### Alpha
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.6.10
+	netmask 255.255.255.0
+	gateway 10.81.6.1
+```
+
+### Beta
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.6.10
+	netmask 255.255.255.0
+	gateway 10.81.6.1
+```
+
+# Gamma
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.6.12
+	netmask 255.255.255.0
+	gateway 10.81.6.1
+```
+
+# Abbey
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.4.10
+	netmask 255.255.255.0
+	gateway 10.81.4.1
+```
+
+# Penny
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.5.10
+	netmask 255.255.255.0
+	gateway 10.81.5.1
+```
+
+# Delta
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.7.10
+	netmask 255.255.255.0
+	gateway 10.81.7.1
+```
+
+# Epsilon
+```
+auto eth0
+iface eth0 inet static
+	address 10.81.7.11
+	netmask 255.255.255.0
+	gateway 10.81.7.1
+```
+
+# Prab
+```
+auto eth0
+iface eth0 inet static
+    address 10.81.1.10
+    netmask 255.255.255.0
+    gateway 10.81.1.1
+```
+
+# Tedd
+```
+auto eth0
+iface eth0 inet static
+    address 10.81.1.11
+    netmask 255.255.255.0
+    gateway 10.81.1.1
+```
+
+# Obladi
+```
+auto eth0
+iface eth0 inet static
+    address 10.81.1.12
+    netmask 255.255.255.0
+    gateway 10.81.1.1
+```
+
+# Desmond
+```
+auto eth0
+iface eth0 inet static
+    address 10.81.1.13
+    netmask 255.255.255.0
+    gateway 10.81.1.1
+```
+
+# Oblada
+```
+auto eth0
+iface eth0 inet static
+    address 10.81.1.14
+    netmask 255.255.255.0
+    gateway 10.81.1.1
+```
+
+# Molly
+```
+auto eth0
+iface eth0 inet static
+    address 10.81.1.15
+    netmask 255.255.255.0
+    gateway 10.81.1.1
+```
+
+## Soal-3
+Jaringan rahasia tidak akan berfungsi tanpa sinkronisasi antar divisi. Pastikan seluruh Entitas dapat saling terhubung dan berkomunikasi lintas jalur (routing internal via rootkit berfungsi). Untuk menghindari fragmentasi saat persiapan, pastikan setiap host non-router menambahkan resolver 192.168.122.1 (tambah di file /etc/resolv.conf, kalau sudah pakai resolver itu tidak perlu memasukkan resolver google) saat antarmukanya aktif agar akses untuk mengunduh paket instalasi dari internet tersedia sejak awal beroperasi.
+
+Untuk menghubungkan semuanya lintas jalur dan internet, maka kita menambahkan resolver 192.168.122.1 pada setiap host non-router:
+```
+echo "nameserver 192.168.122.1" > /etc/resolv.conf
+``
+
+## Soal-4
+Penjaga Direktori mulai menuliskan hukum The Mesh. Pada node prab, bangun zona <xxxx>.com sebagai authoritative dengan SOA yang menunjuk ke prab.<xxxx>.com, serta tambahkan catatan NS untuk prab.<xxxx>.com dan tedd.<xxxx>.com. Buat A record untuk prab.<xxxx>.com dan tedd.<xxxx>.com yang mengarah ke alamat IP mereka masing-masing, serta A record apex <xxxx>.com yang mengarah ke gerbang aplikasi dinamis (penny). Aktifkan fitur notify dan allow-transfer ke tedd, lalu set forwarders ke 192.168.122.1. Di node tedd, tarik zona <xxxx>.com dari master dan pastikan server menjawab secara authoritative. Setelah fondasi nama ini berdiri kokoh, perbarui urutan resolver pada seluruh Entitas non-router menjadi: IP prab, IP tedd, lalu 192.168.122.1. Verifikasi bahwa query ke domain apex maupun hostname di dalam zona dijawab dengan benar oleh prab atau tedd. 
+
+Pertama, pada node prab, kita menginstall bind9.
+```
+apt-get update
+apt-get install bind9 -y
+ln -s /etc/init.d/named /etc/init.d/bind9
+```
+Untuk membuat domain untuk node prab, maka kita menjalankan command berikut.
+```
+cat <<EOF > /etc/bind/named.conf.local
+zone "K35.com" {
+  type master;
+  notify yes;
+  also-notify { 10.81.1.11; };
+  allow-transfer { 10.81.1.11; };
+  file "/etc/bind/jarkom/k35.com";
+};
+EOF
+```
+Dengan demikian, fitur notify dan allow-transfer ke tedd sudah aktif.
+
+Kemudian, kita membuat file untuk zone.
+```
+mkdir /etc/bind/jarkom
+nano /etc/bind/jarkom/k35.com
+```
+
+Isinya adalah sebagai berikut. 
+```
+$TTL    604800          ; Waktu cache default (detik)
+@       IN      SOA     prab.k35.com. admin.k35.com. (
+                        2026092801 ; Serial (format YYYYMMDDXX)
+                        604800     ; Refresh (1 minggu)
+                        86400      ; Retry (1 hari)
+                        2419200    ; Expire (4 minggu)
+                        604800 )   ; Negative Cache TTL
+;
+
+@       IN      NS      prab.k35.com.
+@       IN      NS      tedd.k35.com.
+prab    IN      A       10.81.1.10
+tedd    IN      A       10.81.1.11
+@       IN      A       10.81.5.10
+
+```
+
+Kemudian, isi juga script berikut pada `named.conf.option`
+```
+nano /etc/bind9/named.conf.options
+```
+Isinya adalah sebagai berikut.
+```
+options {
+        directory "/var/cache/bind";
+
+        forwarders {
+                192.168.122.1;
+        };
+        allow-query { any; };
+        auth-nxdomain no;
+        listen-on { any; };
+        listen-on-v6 { any; };
+};
+```
+Dengan demikian, forwarder sudah diset ke `192.168.122.1`.
+
+Kemudian, agar konfigurasi berjalan, lakukan restart.
+```
+service bin9 restart
+```
+Dari node tedd, kita coba ping ke k35.com.
+```
+ping -c 5 k35.com
+```
+![alt text](image/image-22.png)
+Maka, dari gambar tersebut, ping sudah berhasil.
+
+Selanjutnya, kita membuat DNS Slave pada node tedd. Di sini, kita menginstall bind9 seperti pada DNS Domain. 
+```
+apt-get update
+apt-get install bind9 -y
+ln -s /etc/init.d/named /etc/init.d/bind9
+service bind9 restart
+```
+
+Kemudian, kita melakukan konfigurasi pada zone slavenya.
+```
+cat <<EOF > /etc/bind/named.conf.local
+zone "k35.com" {
+    type slave;
+    masters { 10.81.1.10; }; // Masukan IP VPC1 tanpa tanda petik
+    file "/var/cache/bind/k35.com";
+};
+EOF
+```
+Restart bind9 untuk memperbarui.
+```
+service bind9 restart
+```
+
+Kembali pada node prab, kita menghentikan bind9 dengan command berikut.
+```
+service bind9 stop
+```
+
+Pada node tedd, kita melakukan ping untuk membuktikan dapat tersambung meskipun prab sudah diberhentikan.
+```
+ping -c 5 k35.com
+```
+# Ke semua host non route
+echo "nameserver 10.81.1.10
+nameserver 10.81.1.11
+nameserver 192.168.122.1" > /etc/resolv.conf
+
+# Test dari client lain (bebas)
+dig k35.com
+Harus ada
+Answer Section:
+K35.com 604800 IN A 10.81.5.10
 
 ## Soal-11
 Konfigurasikan Penny (menggunakan Apache) sebagai reverse proxy yang mengarah ke semua node di area vault (Obladi & Desmond). Sementara itu, konfigurasikan Abbey (menggunakan Nginx) sebagai reverse proxy menuju area core (Oblada & Molly). Pastikan kedua gerbang ini meneruskan identitas asli pengunjung ke server backend dengan melakukan forwarding header Host dan X-Real-IP. Buktikan bahwa Penny dan Abbey berhasil mendistribusikan lalu lintas dengan tepat.
@@ -187,7 +474,7 @@ Di oblada
 ```
 tail -20 /var/log/nginx/access.log
 ```
-![alt text](image.png)
+![alt text](image/image.png)
 
 ## Soal-12
 Terdapat ruang khusus di penny yang yang menyimpan dokumen rahasia sindikat, oleh karena itu terapkan perlindungan basic authentication untuk path /admin. Akses ke jalur tersebut harus menolak pengunjung tanpa kredensial, dan hanya mengizinkan masuk jika menggunakan credential berikut:
@@ -206,7 +493,7 @@ Selanjutnya buat file kredensial
 htpasswd -cb /etc/apache2/.htpasswd prabs pakar_pinter_jadi_gob***
 ```
 
-![alt text](image-1.png)
+![alt text](image/image-1.png)
 
 Selanjutnya kita perlu membuat direktori dokumen rahasia
 ```
@@ -241,7 +528,7 @@ Dengan Kredensial
 ```
  curl -u prabs:'pakar_pinter_jadi_gob***' http://10.81.5.10/admin/
 ```
-![alt text](image-2.png)
+![alt text](image/image-2.png)
 
 ## soal-13
 Setiap entitas dari luar harus memanggil gerbang dengan nama kanoniknya. Jika ada yang mencoba mengakses IP penny dan domain  penny.xxx.com, paksa sistem untuk melakukan redirect secara permanen (status code 301) menuju www.xxx.com. Sebaliknya, jika ada yang mengakses IP abbey dan domain abbey.xxx.com, lakukan redirect sementara (status code 302) menuju static.xxx.com.
@@ -263,7 +550,7 @@ Selanjutnya simpan file dan restart apache.
 ```
 service apache2 restart
 ```
-![alt text](image-3.png)
+![alt text](image/image-3.png)
 
 Selanjutnya kita perlu menlakukan konfigurasi pada node abbey menggunaakan Nginx. Caranya adalah dengan membuat blok server khusus yang bertugas menangkap domain abbey dan IP, lali return ke static.
 
@@ -289,14 +576,14 @@ Test Penny
 curl -I http://penny.10.81.1.10/
 curl -I http://10.81.5.10/
 ```
-![alt text](image-6.png)
+![alt text](image/image-6.png)
 
 Test Abbey
 ```
 curl -I http://abbey.10.81.1.10.com/
 curl -I http://10.81.4.10/
 ```
-![alt text](image-7.png)
+![alt text](image/image-7.png)
 
 ## Soal-14
 Di dalam The Mesh, rekam jejak tidak boleh dipalsukan oleh sistem. Pastikan access log pada setiap server web di area vault maupun area core mencatat alamat IP asli milik client (pengunjung) yang diteruskan oleh gerbang, dan bukan mencatat IP dari Penny ataupun Abbey.
@@ -334,13 +621,13 @@ Penny
 ```
 curl -H "Host: www.10.81.1.10.com" http://10.81.5.10/static/
 ```
-![alt text](image-8.png)
+![alt text](image/image-8.png)
 
 Abbey
 ```
 curl -H "Host: static.10.81.1.10.com" http://10.81.4.10/app/
 ```
-![alt text](image-9.png)
+![alt text](image/image-9.png)
 
 ## Soal-15
 Rootkit menginstruksikan pembuatan jalur proxy khusus yang berdiri sendiri. Pada penny buat reverse proxy untuk path /eternal yang menyajikan directory /var/www/eternal, dan pastikan path ini dapat mengeksekusi (rendering) file php. Pada abbey, buat jalur /orion yang menyajikan directory /var/www/orion, secara murni statis tanpa perlu rendering php.
@@ -420,13 +707,13 @@ Test Path /eternal di Penny
 ```
 curl http://10.81.5.10/eternal/
 ```
-![alt text](image-11.png)
+![alt text](image/image-11.png)
 
 Test Path /orion di Abbey
 ```
 curl http://10.81.4.10/orion/
 ```
-![alt text](image-10.png)
+![alt text](image/image-10.png)
 
 ## Soal-16
 Ketahanan gerbang The Mesh harus diuji untuk menghadapi bombardir permintaan. Salah satu Klien (misal: Alpha) bertugas melakukan stress test benchmark menggunakan ApacheBench. Lakukan 250 requests dengan tingkat konkurensi (concurrencies) 10 untuk masing - masing titik akhir: www.xxx.com dan static.xxx.com. Tampilkan rangkuman hasilnya.
@@ -444,12 +731,12 @@ Stress Test
 ab -n 250 -c 10 -H "Host: static.10.81.1.10.com" http://10.81.4.10/
 ```
 
-![alt text](image-12.png)
+![alt text](image/image-12.png)
 
 ```
 ab -n 250 -c 10 -H "Host: www.10.81.1.10.com" http://10.81.5.10/
 ```
-![alt text](image-13.png)
+![alt text](image/image-13.png)
 
 
 ## Soal-17
@@ -496,7 +783,7 @@ Testing
 ```
 dig @10.81.1.10 alpha.10.81.1.10.com TXT +short
 ```
-![alt text](image-14.png)
+![alt text](image/image-14.png)
 
 ## Soal-18
 Ubah A record DNS milik abbey.xxx.com ke alamat IP yang fiktif (ubah secara random namun pastikan format IP valid). Naikkan nilai serial SOA di prab dan pastikan tedd ikut tersinkron. Tetapkan TTL sebesar 15 detik pada record yang relevan tersebut. Verifikasi momen yang terjadi pada tiga fase pencarian: sebelum perubahan terjadi (mengembalikan IP lama), saat perubahan baru saja terjadi dalam jeda 15 detik (masih IP lama karena cache), dan setelah batas waktu TTL habis (berubah ke IP fiktif yang baru). 
@@ -505,7 +792,7 @@ Pada awal kita melakukan pengecekan dari node klien untuk melihat IP asli dari a
 ```
 dig abbey.10.81.1.10.com +short
 ```
-![alt text](image-16.png)
+![alt text](image/image-16.png)
 
 Selanjutnya kita melakukan konfigurasi perubahan IP dan TTL.
 pada node prab
@@ -542,7 +829,7 @@ Setelah itu langsung pergi ke node client dan jalankan
 ```
 dig abbey.10.81.1.10.com +short
 ```
-![alt text](image-17.png)
+![alt text](image/image-17.png)
 
 ## Soal-19
 Last? But not least? Buat CNAME record yang melakukan binding dari domain internal outbound.xxx.com menuju domain eksternal http.badssl.com, Lakukan perintah curl ke http://outbound.xxx.com dan pastikan output yang dihasilkan sesuai dengan isi konten di halaman http.badssl.com.
@@ -565,7 +852,7 @@ Testing
 ```
 curl http://outbound.10.81.1.10.com/
 ```
-![alt text](image-18.png)
+![alt text](image/image-18.png)
 
 ## Soal-20
 Setelah semua penyelesaian selesai, pastikan semua service dan konfigurasi yang telah dikerjakan dari awal tetap berjalan normal dan berstatus autostart saat node di-restart (khusus untuk kasus ini, abaikan konfigurasi nomor 18 dan biarkan koordinat kembali normal).
@@ -584,8 +871,8 @@ sed -i 's/2026092905/2026092906/g' /etc/bind/jarkom/10.81.1.10.com
 # Terapkan perubahan
 service bind9 restart
 ```
-![alt text](image-19.png)
-![alt text](image-20.png)
+![alt text](image/image-19.png)
+![alt text](image/image-20.png)
 
 Selanjutnya kita perlu konfigurasi autostart service di setiap node.
 
@@ -608,5 +895,5 @@ Untuk melakukan test kita perlu mematikan salah satu node di gns3, lalu nyalakan
 ```
 service apache2 status
 ```
-![alt text](image-21.png)
+![alt text](image/image-21.png)
 Konfigurasi ini diterapkan untuk layanan bind9 di node DNS, apache2 di gerbang dan vault, serta nginx di gerbang statis dan core. Pengujian dilakukan dengan mematikan dan menyalakan ulang (reboot) node di GNS3, di mana pengecekan menggunakan service apache2 status membuktikan bahwa seluruh layanan web maupun DNS otomatis berjalan (running) tanpa memerlukan intervensi manual.
