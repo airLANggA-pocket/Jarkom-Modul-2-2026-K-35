@@ -292,16 +292,399 @@ Pada node tedd, kita melakukan ping untuk membuktikan dapat tersambung meskipun 
 ```
 ping -c 5 k35.com
 ```
-# Ke semua host non route
+![](image/image-22.png)
+
+Kemudian, untuk memperbarui urutan resolver menjadi IP prab, IP tedd, dan 192.168.122.1, jalankan command berikut pada seluruh node non-router.
+```
 echo "nameserver 10.81.1.10
 nameserver 10.81.1.11
 nameserver 192.168.122.1" > /etc/resolv.conf
+```
 
-# Test dari client lain (bebas)
+Lalu, kita jalankan command berikut di node lain, misalnya pada node obladi.
+```
 dig k35.com
-Harus ada
-Answer Section:
-K35.com 604800 IN A 10.81.5.10
+```
+![](image/image-23.png)
+
+Maka, terlihat bahwa query ke domain apex dan hostname di dalam zone dijawab oleh prab dan tedd.
+
+## Soal-5
+"Entitas tanpa identitas adalah anomali," pesan Rootkit. Namai semua Entitas (hostname) sesuai glosarium: rootkit, alpha, beta, gamma, delta, epsilon, prab, tedd, abbey, penny, obladi, desmond, oblada, molly, dan verifikasi bahwa setiap host mengenali hostname tersebut secara system-wide. Buat setiap domain untuk masing-masing node sesuai dengan namanya (contoh: alpha.<xxxx>.com) dan assign IP masing-masing juga. Lakukan pengecualian untuk node yang bertanggung jawab atas prab dan tedd.
+
+Untuk memverifikasi setiap host mengenail hostname yang sudah dibuat sebelumnya, kita membuat domain sesuai nama dan IP di dalam node prab.
+```
+nano /etc/bind/jarkom/k35.com
+```
+
+```
+alpha   IN      A       10.81.6.10
+beta    IN      A       10.81.6.11
+gamma   IN      A       10.81.6.12
+abbey   IN      A       10.81.4.10
+penny   IN      A       10.81.5.10
+delta   IN      A       10.81.7.10
+epsilon IN      A       10.81.7.11
+obladi  IN      A       10.81.1.12
+desmond IN      A       10.81.1.13
+oblada  IN      A       10.81.1.14
+molly   IN      A       10.81.1.15
+```
+Naikkan serial SOA sebelum menyimpan perubahan di atas.
+
+## Soal-6
+Pastikan zone transfer berjalan, pastikan tedd telah menerima salinan zona terbaru dari prab. Nilai serial SOA di keduanya harus sama karena keduanya tidak bisa dipisahkan dan saling melengkapi.
+
+Pertama, kita mengecek apakah zone transfer berjalan dengan menjalankan command berikut.
+```
+dig @10.81.1.10 k35.com AXFR
+```
+![](image/image-24.png)
+
+Kemudian, untuk mengecek kesamaan nilai serial SOA antara prab dan tedd, kita jalan command berikut.
+```
+dig @10.81.1.10 k35.com SOA
+```
+![](image/image-25.png)
+
+```
+dig @10.81.1.11 k35.com SOA
+```
+![](image/image-26.png)
+
+Kita bisa melihat bahwa serial SOA 2026092802 di kedua node.
+
+## Soal-7
+abbey dan penny sebagai gerbang utama, obladi dan desmond sebagai web statis, oblada dan molly sebagai web dinamis. Tambahkan pada zona <xxxx>.com A record untuk vault.<xxxx>.com (IP obladi & desmond), dan core.<xxxx>.com (IP oblada & molly). Tetapkan CNAME:
+www.<xxxx>.com → penny.<xxxx>.com
+static.<xxxx>.com → abbey.<xxxx>.com
+Verifikasi dari dua klien berbeda bahwa seluruh hostname tersebut ter-resolve ke tujuan yang benar dan konsisten.
+
+Kita membuat penny sebagai gerbang utama, obladi sebagai web statis, dan oblada sebagai web dinamis. Pada node prab, kita menambahkannya di file `k35.com`
+```
+nano /etc/bind/jarkom/k35.com
+```
+```
+www     IN      CNAME   penny.k35.com.
+static  IN      CNAME   abbey.k35.com.
+vault   IN      CNAME   obladi.k35.com.
+core    IN      CNAME   oblada.k35.com.
+```
+
+Lalu, naikkan serial SOA nya sebelum disimpan
+```
+service bind9 reload
+```
+Untuk mengecek apakah sudah berjalan, maka jalan command berikut di 2 node lain, kami membuatnya di alpha dan delta.
+``` 
+dig www.k35.com
+```
+```
+dig vault.k35.com
+```
+```
+dig static.k35.com
+```
+```
+dig core.k35.com CNAME
+```
+![](image/image-27.png)
+![](image/image-28.png)
+![](image/image-29.png)
+![](image/image-30.png)
+![](image/image-31.png)
+![](image/image-32.png)
+![](image/image-33.png)
+![](image/image-34.png)
+
+## Soal-8
+Di prab (master) deklarasikan reverse zone untuk segmen jaringan  tempat abbey, penny, area vault, dan area core berada. Di tedd (slave) tarik reverse zone tersebut sebagai slave, isi PTR untuk keempat hostname itu agar pencarian balik IP address mengembalikan hostname yang benar, lalu pastikan query reverse untuk alamat abbey, penny, area vault, dan area core dijawab authoritative.
+
+Untuk mendeklarasikan reverse zone, kita melakukan konfigurasi sebagai berikut. Tambahkan 
+```
+cat << 'EOF' >> /etc/bind/named.conf.local
+zone "1.81.10.in-addr.arpa" {
+        type master;
+        notify yes;
+        also-notify { 10.81.1.11; };
+        allow-transfer { 10.81.1.11; };
+        file "/etc/bind/jarkom/1.81.10.in-addr.arpa";
+};
+
+zone "4.81.10.in-addr.arpa" {
+        type master;
+        notify yes;
+        also-notify { 10.81.1.11; };
+        allow-transfer { 10.81.1.11; };
+        file "/etc/bind/jarkom/4.81.10.in-addr.arpa";
+};
+
+zone "5.81.10.in-addr.arpa" {
+        type master;
+        notify yes;
+        also-notify { 10.81.1.11; };
+        allow-transfer { 10.81.1.11; };
+        file "/etc/bind/jarkom/5.81.10.in-addr.arpa";
+};
+EOF
+```
+Kemudian, kita membuat file untuk masing-masing jaringan.
+Untuk reverse zone jaringan `10.81.1`:
+```
+nano /etc/bind/jarkom/1.81.10.in-addr.arpa
+```
+Isinya adalah sebagai berikut.
+```
+$TTL    604800          ; Waktu cache default (detik)
+@       IN      SOA     k35.com. root.k35.com. (
+                        2026092901 ; Serial (format YYYYMMDDXX)
+                        604800     ; Refresh (1 minggu)
+                        86400      ; Retry (1 hari)
+                        2419200    ; Expire (4 minggu)
+                        604800 )   ; Negative Cache TTL
+;
+
+@       IN      NS      prab.k35.com.
+
+12      IN      PTR     obladi.k35.com.
+13      IN      PTR     desmond.k35.com.
+14      IN      PTR     oblada.k35.com.
+15      IN      PTR     molly.k35.com.
+```
+Untuk reverse zone jaringan `10.81.4`:
+```
+nano /etc/bind/jarkom/4.81.10.in-addr.arpa
+```
+Isinya adalah sebagai berikut.
+```
+$TTL    604800          ; Waktu cache default (detik)
+@       IN      SOA     k35.com. root.k35.com. (
+                        2026092901 ; Serial (format YYYYMMDDXX)
+                        604800     ; Refresh (1 minggu)
+                        86400      ; Retry (1 hari)
+                        2419200    ; Expire (4 minggu)
+                        604800 )   ; Negative Cache TTL
+;
+
+@       IN      NS      prab.k35.com.
+
+10      IN      PTR     abbey.k35.com.
+```
+
+Untuk reverse zone `10.81.5`:
+```
+nano /etc/bind/jarkom/5.81.10.in-addr.arpa
+```
+Isinya adalah sebagai berikut.
+```
+$TTL    604800          ; Waktu cache default (detik)
+@       IN      SOA     k35.com. root.k35.com. (
+                        2026092901 ; Serial (format YYYYMMDDXX)
+                        604800     ; Refresh (1 minggu)
+                        86400      ; Retry (1 hari)
+                        2419200    ; Expire (4 minggu)
+                        604800 )   ; Negative Cache TTL
+;
+
+@       IN      NS      prab.k35.com.
+
+10      IN      PTR     penny.k35.com.
+```
+
+Kemudian, cek ketiga zone tersebut dengan command ini:
+```
+named-checkzone 1.81.10.in-addr.arpa /etc/bind/jarkom/1.81.10.in-addr.arpa
+named-checkzone 4.81.10.in-addr.arpa /etc/bind/jarkom/4.81.10.in-addr.arpa
+named-checkzone 5.81.10.in-addr.arpa /etc/bind/jarkom/5.81.10.in-addr.arpa
+```
+Lalu, reload untuk menyimpan perubahan.
+```
+service bind9 reload
+```
+
+Pada node tedd, kita menarik reverse zone yang tadi sebagai slave.
+```
+cat << 'EOF' >> /etc/bind/named.conf.local
+zone "1.81.10.in-addr.arpa" {
+    type slave;
+    masters { 10.81.1.10; };
+    file "/var/cache/bind/1.81.10.in-addr.arpa";
+};
+
+zone "4.81.10.in-addr.arpa" {
+    type slave;
+    masters { 10.81.1.10; };
+    file "/var/cache/bind/4.81.10.in-addr.arpa";
+};
+
+zone "5.81.10.in-addr.arpa" {
+    type slave;
+    masters { 10.81.1.10; };
+    file "/var/cache/bind/5.81.10.in-addr.arpa";
+};
+EOF
+```
+Restart untuk menyimpan perubahan.
+
+```
+service bind9 restart
+```
+![](image/image-35.png)
+
+Kemudian, cek dengan AXFR:
+``` 
+dig @10.81.1.10 4.81.10.in-addr.arpa AXFR
+```
+![](image/image-36.png)
+
+## Soal-9
+Jalankan layanan web statis pada hostname di node area vault (menggunakan apache). Buka folder direktori /arsip/ dan aktifkan fitur autoindex (directory listing) pada konfigurasi Apache sehingga seluruh daftar file di dalamnya dapat ditelusuri langsung dari browser. Akses pengujian harus dilakukan melalui hostname, bukan IP address.
+
+Untuk menjalankan layanan web statis pada hostname di node area vault, kita menginstall apache2 terlebih dahulu. Di sini vault adalah node obladi, sehingga command berikut dijalankan di obladi.
+```
+apt-get update
+apt-get install apache2
+```
+
+Lalu, kita start apache tersebut.
+```
+service apache2 start
+```
+Selanjutnya, kita membuat folder direktori /arsip/.
+```
+mkdir -p /var/www/html/arsip
+```
+Lalu, kita buat konfigurasi ke `arsip.conf`
+```
+nano /etc/apache2/conf-available/arsip.conf
+```
+Konfigurasinya adalah sebagai berikut.
+```
+<Directory /var/www/html/arsip>
+    Options +Indexes
+    AllowOverride None
+    Require all granted
+</Directory>
+```
+`Options +Indexes` digunakan untuk mengaktifkan fitur autoindex (directory listing).
+
+Kemudian, aktifkan konfigurasi arsipnya.
+```
+a2enconf arsip
+```
+Jalankan command ini setelah membuat konfigurasinya.
+```
+service apache2 reload
+```
+![](image/image-37.png)
+
+Pada arsip, kita mengisi beberapa file untuk mencoba melihat tampilan daftar file yang ditelurusi dari browser.
+```
+touch /var/www/html/arsip/file1.txt
+touch /var/www/html/arsip/file2.txt
+touch /var/www/html/arsip/data.pdf
+```
+Terakhir, kita jalankan di node lain, di sini kami menjalankannya di alpha dengan langsung melalui hostname obladi.
+```
+lynx http://obladi.k35.com/arsip/
+```
+![](image/image-38.png)
+
+File yang sudah dibuat tadi, terlihat pada arsip.
+
+## Soal-10
+Jalankan layanan web dinamis (PHP-FPM) pada hostname di node core (menggunakan nginx). Buat sebuah aplikasi sederhana yang memuat halaman beranda dan halaman profil. Terapkan aturan rewrite pada server sehingga akses ke /profil dapat berfungsi dengan URL bersih (tanpa akhiran .php). Akses pengujian wajib dilakukan melalui hostname.
+
+Untuk menjalan web dinamis pada node core yaitu oblada, kita menginstall nginx.
+```
+apt-get update
+apt install nginx php php-fpm -y
+```
+
+Kemudian kita membuat aplikasi sederhana pakai php.
+```
+nano /var/www/jarkom/index.php
+```
+Isinya terdapat hyperlink menuju halaman profil.
+```
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aplikasi</title>
+</head>
+<body>
+    <h1>Halaman Beranda</h1>
+    <p>Selamat datang di website Core Oblada.</p>
+    <a href="/profil">Profil</a>
+</body>
+</html>
+```
+
+Pada konfigurasi, kita membuat agar profil.php dapat diproses oleh PHP-FPM sehingg akses ke /profil dapat berfungsi dengan URL bersih.
+```
+nano /etc/nginx/sites-available/default
+```
+
+Konfigurasinya adalah sebagai berikut.
+```
+    index index.php;
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ $uri.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+    }
+location ~ /\.ht {
+                        deny all;
+        }
+
+        error_log /var/log/nginx/jarkom_error.log;
+        access_log /var/log/nginx/jarkom_access.log;
+}
+```
+
+Kemudian, pada `profil.php`, kita mengisi html berisi hyperlink menuju Beranda. 
+```
+nano /var/www/jarkom/profil.php
+```
+Isinya adalah sebagai berikut.
+```
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profil</title>
+</head>
+<body>
+    <h1>Halaman Profil</h1>
+    <p>Ini adalah halaman profil.</p>
+    <a href="/">Beranda</a>
+</body>
+</html>
+```
+
+Untuk validasi konfigurasi, jalankan command berikut,
+```
+nginx -t
+```
+Lalu, jalankan ulang untuk menyimpan perubahan.
+```
+service nginx restart
+```
+Jalankan command berikut.
+```
+lynx http://oblada.k35.com/
+```
+![](image/image-39.png)
+
+Kemudian, untuk profil adalah sebagai berikut.
+```
+lynx http://oblada.k35.com/profil
+```
+![](image/image-40.png)
 
 ## Soal-11
 Konfigurasikan Penny (menggunakan Apache) sebagai reverse proxy yang mengarah ke semua node di area vault (Obladi & Desmond). Sementara itu, konfigurasikan Abbey (menggunakan Nginx) sebagai reverse proxy menuju area core (Oblada & Molly). Pastikan kedua gerbang ini meneruskan identitas asli pengunjung ke server backend dengan melakukan forwarding header Host dan X-Real-IP. Buktikan bahwa Penny dan Abbey berhasil mendistribusikan lalu lintas dengan tepat.

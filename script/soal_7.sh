@@ -1,3 +1,4 @@
+#!bin/bash
 
 # Tambahkan di /etc/bind/jarkom/k35.com
 www     IN      CNAME   penny.k35.com.

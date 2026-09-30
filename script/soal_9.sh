@@ -10,20 +10,22 @@ mkdir -p /var/www/html/arsip
 
 nano /etc/apache2/conf-available/arsip.conf
 
+```
 <Directory /var/www/html/arsip>
     Options +Indexes
     AllowOverride None
     Require all granted
 </Directory>
+```
 
 a2enconf arsip
 
 service apache2 reload
 
-
-root@obladi:/# touch /var/www/html/arsip/file1.txt
-root@obladi:/# touch /var/www/html/arsip/file2.txt
-root@obladi:/# touch /var/www/html/arsip/data.pdf
+# Isi arsip dengan beberapa file
+touch /var/www/html/arsip/file1.txt
+touch /var/www/html/arsip/file2.txt
+touch /var/www/html/arsip/data.pdf
 
 
 # Di client lain, misalnya alpha:

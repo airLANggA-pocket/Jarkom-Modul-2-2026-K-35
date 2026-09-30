@@ -21,7 +21,7 @@ nano /var/www/jarkom/index.php
 
 nano /etc/nginx/sites-available/default
     index index.php;
-    server_name_;
+    server_name _;
 
     location / {
         try_files $uri $uri/ $uri.php?$query_string;
