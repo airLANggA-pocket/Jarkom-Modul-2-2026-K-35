@@ -1,10 +1,13 @@
 #!bin/bash
 
 # Tambahkan di /etc/bind/jarkom/k35.com
+cat << 'EOF' >> /etc/bind/jarkom/k35.com
+
 www     IN      CNAME   penny.k35.com.
 static  IN      CNAME   abbey.k35.com.
 vault   IN      CNAME   obladi.k35.com.
 core    IN      CNAME   oblada.k35.com.
+EOF
 
 # Naikkan serial SOA nya sebelum disimpan
 
@@ -15,7 +18,5 @@ service bind9 reload
 dig www.k35.com
 dig vault.k35.com
 dig static.k35.com
-dig core.k35.com CNAME
-
-# Harus ada 
+dig core.k35.com CNAME 
 

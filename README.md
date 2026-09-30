@@ -734,8 +734,8 @@ a2dissite 000-default.conf
 # Buat konfigurasi reverse proxy
 cat > /etc/apache2/sites-available/penny-proxy.conf << 'EOF'
 <VirtualHost *:80>
-    ServerName penny.<xxxx>.com
-    ServerAlias www.<xxxx>.com vault.<xxxx>.com
+    ServerName penny.k35.com
+    ServerAlias www.k35.com vault.k35.com
 
     ProxyRequests Off
     ProxyPreserveHost On
@@ -796,7 +796,7 @@ upstream core {
 
 server {
     listen 80;
-    server_name abbey.<xxxx>.com static.<xxxx>.com core.<xxxx>.com;
+    server_name abbey.k35.com static.k35.com core.k35.com;
 
     location / {
         proxy_pass http://core;
@@ -839,7 +839,7 @@ echo " PENNY (Apache) -> VAULT (obladi & desmond)"
 echo "============================================"
 for i in $(seq 1 6); do
     echo -n "Request $i -> "
-    curl -s http://www.<xxxx>.com | grep -oiE "(obladi|desmond)" | head -1
+    curl -s http://www.k35.com | grep -oiE "(obladi|desmond)" | head -1
 done
 
 echo ""
@@ -856,11 +856,11 @@ echo "============================================"
 echo " CEK HEADER X-Real-IP"
 echo "============================================"
 echo "-> Header dari Penny:"
-curl -sI http://www.<xxxx>.com | grep -iE "x-real|x-forward|HTTP"
+curl -sI http://www.k35.com | grep -iE "x-real|x-forward|HTTP"
 
 echo ""
 echo "-> Header dari Abbey:"
-curl -sI http://static.<xxxx>.com | grep -iE "x-real|x-forward|HTTP"
+curl -sI http://static.k35.com | grep -iE "x-real|x-forward|HTTP"
 ```
 
 Jalankan
@@ -957,7 +957,7 @@ service apache2 restart
 ```
 ![alt text](image/image-3.png)
 
-Selanjutnya kita perlu menlakukan konfigurasi pada node abbey menggunaakan Nginx. Caranya adalah dengan membuat blok server khusus yang bertugas menangkap domain abbey dan IP, lali return ke static.
+Selanjutnya kita perlu melakukan konfigurasi pada node abbey menggunaakan Nginx. Caranya adalah dengan membuat blok server khusus yang bertugas menangkap domain abbey dan IP, lalu return ke static.
 
 ```
 server {
