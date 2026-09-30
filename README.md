@@ -24,9 +24,9 @@ Meskipun The Mesh beroperasi dalam bayang-bayang, Rootkit menyadari bahwa Entita
 
 Kita melakukan konfigurasi pada setiap console, baik router dan non-router:
 
-### Rootkit
+Rootkit
 ```
-uto eth0
+auto eth0
 iface eth0 inet dhcp
 
 auto eth1
@@ -55,7 +55,7 @@ iface eth5 inet static
     netmask 255.255.255.0
 ```
 
-### Alpha
+Alpha
 ```
 auto eth0
 iface eth0 inet static
@@ -64,7 +64,7 @@ iface eth0 inet static
 	gateway 10.81.6.1
 ```
 
-### Beta
+Beta
 ```
 auto eth0
 iface eth0 inet static
@@ -73,7 +73,7 @@ iface eth0 inet static
 	gateway 10.81.6.1
 ```
 
-# Gamma
+Gamma
 ```
 auto eth0
 iface eth0 inet static
@@ -82,7 +82,7 @@ iface eth0 inet static
 	gateway 10.81.6.1
 ```
 
-# Abbey
+Abbey
 ```
 auto eth0
 iface eth0 inet static
@@ -91,7 +91,7 @@ iface eth0 inet static
 	gateway 10.81.4.1
 ```
 
-# Penny
+Penny
 ```
 auto eth0
 iface eth0 inet static
@@ -100,7 +100,7 @@ iface eth0 inet static
 	gateway 10.81.5.1
 ```
 
-# Delta
+Delta
 ```
 auto eth0
 iface eth0 inet static
@@ -109,7 +109,7 @@ iface eth0 inet static
 	gateway 10.81.7.1
 ```
 
-# Epsilon
+Epsilon
 ```
 auto eth0
 iface eth0 inet static
@@ -118,7 +118,7 @@ iface eth0 inet static
 	gateway 10.81.7.1
 ```
 
-# Prab
+Prab
 ```
 auto eth0
 iface eth0 inet static
@@ -127,7 +127,7 @@ iface eth0 inet static
     gateway 10.81.1.1
 ```
 
-# Tedd
+Tedd
 ```
 auto eth0
 iface eth0 inet static
@@ -136,7 +136,7 @@ iface eth0 inet static
     gateway 10.81.1.1
 ```
 
-# Obladi
+Obladi
 ```
 auto eth0
 iface eth0 inet static
@@ -145,7 +145,7 @@ iface eth0 inet static
     gateway 10.81.1.1
 ```
 
-# Desmond
+Desmond
 ```
 auto eth0
 iface eth0 inet static
@@ -154,7 +154,7 @@ iface eth0 inet static
     gateway 10.81.1.1
 ```
 
-# Oblada
+Oblada
 ```
 auto eth0
 iface eth0 inet static
@@ -163,7 +163,7 @@ iface eth0 inet static
     gateway 10.81.1.1
 ```
 
-# Molly
+Molly
 ```
 auto eth0
 iface eth0 inet static
