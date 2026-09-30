@@ -18,8 +18,8 @@ nano /var/www/jarkom/index.php
 </html>
 
 
-
 nano /etc/nginx/sites-available/default
+# Isinya
     index index.php;
     server_name _;
 
@@ -41,6 +41,7 @@ location ~ /\.ht {
 
 nano /var/www/jarkom/profil.php
 
+# Isinya
 <!DOCTYPE html>
 <html>
 <head>
