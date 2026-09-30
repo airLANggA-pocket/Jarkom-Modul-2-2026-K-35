@@ -1,6 +1,20 @@
+#!bin/bash
+
 # Konfigurasi
 
-# Pakai Debinet semuanya
+# Di konfigurasi router
+```   
+   up sysctl -w net.ipv4.ip_forward=1
+   up iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+   up iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth2 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth3 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth4 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth5 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT 
+```
+
+# Konfigurasi setiap node
 # rootkit
 auto eth0
 iface eth0 inet dhcp

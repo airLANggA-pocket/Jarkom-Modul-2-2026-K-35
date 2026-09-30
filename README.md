@@ -19,8 +19,26 @@ Sebagai pusat kesadaran The Mesh, rootkit harus merentangkan koneksinya ke lima 
 
 ![alt text](image/topologi.png)
 
+Pada bagian ini, kita membuat topologi dengan pembagian sebagai berikut.
+- Operator (Switch6): alpha, beta, dan gamma
+- Penjaga directory (Switch2): prab dan tedd
+- Gerbang penyaring (Switch4 dan Switch5): abbey dan penny
+- Repository (Switch3): obladi, desmond, oblada, molly
+
 ## Soal-2
 Meskipun The Mesh beroperasi dalam bayang-bayang, Rootkit menyadari bahwa Entitas di dalamnya masih membutuhkan asupan paket dari dunia luar. Buka jalur menuju NAT dengan memastikan antarmuka WAN di router rootkit aktif. Konfigurasikan NAT agar dapat meneruskan lalu lintas keluar bagi seluruh alamat internal, sehingga semua host di dalam jaringan dapat menjangkau internet publik menggunakan IP address.
+
+Untuk menghubungkan semuanya lintas jalur dan internet, maka kita menambahkan konfigurasi di bagian router rootkit bagian eth0 sebagai berikut.
+```   
+   up sysctl -w net.ipv4.ip_forward=1
+   up iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+   up iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth2 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth3 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth4 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth5 -o eth0 -j ACCEPT
+   up iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT 
+```
 
 Kita melakukan konfigurasi pada setiap console, baik router dan non-router:
 
@@ -172,14 +190,17 @@ iface eth0 inet static
     gateway 10.81.1.1
 ```
 
+![](image/topologi-2.png)
+
 ## Soal-3
 Jaringan rahasia tidak akan berfungsi tanpa sinkronisasi antar divisi. Pastikan seluruh Entitas dapat saling terhubung dan berkomunikasi lintas jalur (routing internal via rootkit berfungsi). Untuk menghindari fragmentasi saat persiapan, pastikan setiap host non-router menambahkan resolver 192.168.122.1 (tambah di file /etc/resolv.conf, kalau sudah pakai resolver itu tidak perlu memasukkan resolver google) saat antarmukanya aktif agar akses untuk mengunduh paket instalasi dari internet tersedia sejak awal beroperasi.
 
-Untuk menghubungkan semuanya lintas jalur dan internet, maka kita menambahkan resolver 192.168.122.1 pada setiap host non-router:
+Selanjutnya, menambah resolver 192.168.122.1 pada setiap host non-router:
 
 ```
 echo "nameserver 192.168.122.1" > /etc/resolv.conf
 ```
+Pengecekan dilakukan dengan ping antar host dan ke jaringan internet (google.com).
 
 ## Soal-4
 Penjaga Direktori mulai menuliskan hukum The Mesh. Pada node prab, bangun zona <xxxx>.com sebagai authoritative dengan SOA yang menunjuk ke prab.<xxxx>.com, serta tambahkan catatan NS untuk prab.<xxxx>.com dan tedd.<xxxx>.com. Buat A record untuk prab.<xxxx>.com dan tedd.<xxxx>.com yang mengarah ke alamat IP mereka masing-masing, serta A record apex <xxxx>.com yang mengarah ke gerbang aplikasi dinamis (penny). Aktifkan fitur notify dan allow-transfer ke tedd, lalu set forwarders ke 192.168.122.1. Di node tedd, tarik zona <xxxx>.com dari master dan pastikan server menjawab secara authoritative. Setelah fondasi nama ini berdiri kokoh, perbarui urutan resolver pada seluruh Entitas non-router menjadi: IP prab, IP tedd, lalu 192.168.122.1. Verifikasi bahwa query ke domain apex maupun hostname di dalam zona dijawab dengan benar oleh prab atau tedd. 
@@ -229,7 +250,7 @@ tedd    IN      A       10.81.1.11
 
 ```
 
-Kemudian, isi juga script berikut pada `named.conf.option`
+Selanjutnya, isi juga script berikut pada `named.conf.option`
 ```
 nano /etc/bind9/named.conf.options
 ```
@@ -249,7 +270,7 @@ options {
 ```
 Dengan demikian, forwarder sudah diset ke `192.168.122.1`.
 
-Kemudian, agar konfigurasi berjalan, lakukan restart.
+Agar konfigurasi berjalan, lakukan restart.
 ```
 service bin9 restart
 ```
@@ -330,7 +351,7 @@ desmond IN      A       10.81.1.13
 oblada  IN      A       10.81.1.14
 molly   IN      A       10.81.1.15
 ```
-Naikkan serial SOA sebelum menyimpan perubahan di atas.
+Naikkan serial SOA sebelum menyimpan perubahan di atas. Sebelumnya adalah `2026092801`, dinaikkan menjadi `2026092802`.
 
 ## Soal-6
 Pastikan zone transfer berjalan, pastikan tedd telah menerima salinan zona terbaru dari prab. Nilai serial SOA di keduanya harus sama karena keduanya tidak bisa dipisahkan dan saling melengkapi.
